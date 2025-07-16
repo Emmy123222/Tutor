@@ -4,6 +4,25 @@ const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY,
 });
 
+// Helper function to clean AI responses
+function cleanAIResponse(response: string): string {
+    let cleaned = response.trim();
+    
+    // Remove markdown code blocks
+    if (cleaned.startsWith('```json')) {
+        cleaned = cleaned.replace(/```json\n?/, '').replace(/\n?```$/, '');
+    } else if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/```\n?/, '').replace(/\n?```$/, '');
+    }
+    
+    // Remove common prefixes that Groq adds before JSON
+    cleaned = cleaned.replace(/^Here.*?JSON.*?:/i, '').trim();
+    cleaned = cleaned.replace(/^Here.*?format.*?:/i, '').trim();
+    cleaned = cleaned.replace(/^Here.*?:/i, '').trim();
+    
+    return cleaned;
+}
+
 export async function generateLesson(topic: string) {
     const lessonPrompt = `Create a lesson about "${topic}". Return only valid JSON:
 
@@ -28,14 +47,7 @@ export async function generateLesson(topic: string) {
         }
 
         // Clean the response to extract JSON
-        let cleanedResponse = response.trim();
-
-        // Remove markdown code blocks if present
-        if (cleanedResponse.startsWith('```json')) {
-            cleanedResponse = cleanedResponse.replace(/```json\n?/, '').replace(/\n?```$/, '');
-        } else if (cleanedResponse.startsWith('```')) {
-            cleanedResponse = cleanedResponse.replace(/```\n?/, '').replace(/\n?```$/, '');
-        }
+        let cleanedResponse = cleanAIResponse(response);
 
         try {
             const parsed = JSON.parse(cleanedResponse);
@@ -100,14 +112,7 @@ export async function generateFlashcards(topic: string) {
         }
 
         // Clean the response to extract JSON
-        let cleanedResponse = response.trim();
-
-        // Remove markdown code blocks if present
-        if (cleanedResponse.startsWith('```json')) {
-            cleanedResponse = cleanedResponse.replace(/```json\n?/, '').replace(/\n?```$/, '');
-        } else if (cleanedResponse.startsWith('```')) {
-            cleanedResponse = cleanedResponse.replace(/```\n?/, '').replace(/\n?```$/, '');
-        }
+        let cleanedResponse = cleanAIResponse(response);
 
         try {
             const parsed = JSON.parse(cleanedResponse);
@@ -190,14 +195,7 @@ export async function generateQuiz(topic: string) {
         }
 
         // Clean the response to extract JSON
-        let cleanedResponse = response.trim();
-
-        // Remove markdown code blocks if present
-        if (cleanedResponse.startsWith('```json')) {
-            cleanedResponse = cleanedResponse.replace(/```json\n?/, '').replace(/\n?```$/, '');
-        } else if (cleanedResponse.startsWith('```')) {
-            cleanedResponse = cleanedResponse.replace(/```\n?/, '').replace(/\n?```$/, '');
-        }
+        let cleanedResponse = cleanAIResponse(response);
 
         try {
             const parsed = JSON.parse(cleanedResponse);
